@@ -2,7 +2,7 @@
    Guarda o app no celular. A escala em si NAO e cacheada aqui: ela vem do
    Apps Script e o proprio index guarda a ultima copia no localStorage. */
 
-const CACHE = 'bighome-escalas-v8-2026-08-08';
+const CACHE = 'bighome-escalas-v9-2026-08-08';
 
 const LOCAIS = [
   './',

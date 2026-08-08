@@ -2,7 +2,7 @@
   "name": "Bighome — Escalas",
   "short_name": "Escalas",
   "description": "Escala dos setores da igreja Bighome São Paulo.",
-  "start_url": "./index.html",
+  "start_url": "./index.html?e=bighome2026",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
