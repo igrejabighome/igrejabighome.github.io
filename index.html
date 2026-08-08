@@ -1,0 +1,1063 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Bighome — Escalas</title>
+<meta name="theme-color" content="#0B0B0B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Escalas">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+/* Creato Display — SIL Open Font License, pode ser distribuida junto com o app.
+   E a fonte do Figma "Cronograma Culto" e agora vale para o app INTEIRO. */
+@font-face{font-family:'Creato Display';src:url('CreatoDisplay-Regular.otf') format('opentype');font-weight:400;font-display:swap}
+@font-face{font-family:'Creato Display';src:url('CreatoDisplay-Medium.otf')  format('opentype');font-weight:500;font-display:swap}
+@font-face{font-family:'Creato Display';src:url('CreatoDisplay-Black.otf')   format('opentype');font-weight:900;font-display:swap}
+
+/* O app é PRETO E BRANCO. O fundo escuro e o dourado existem só na tela do
+   Cronograma, que reproduz o pôster do Figma — decisão do André em 07/08. */
+:root{
+  --fundo:#FFFFFF;
+  --cartao:#FFFFFF;
+  --cartao2:#F4F4F4;     /* elevado: dia com escala no calendário */
+  --linha:#E3E3E3;
+  --texto:#0B0B0B;
+  --texto2:#6B6B6B;
+  --texto3:#AFAFAF;
+  --pad:20px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+
+  /* só o cronograma usa */
+  --foto:url('topo-culto.jpg');
+  --breu:#0B0B0B;
+  --carvao:#131211;
+  --carvao2:#1C1A18;
+  --ouro:#E0A32E;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:'Creato Display',system-ui,-apple-system,sans-serif;
+  background:var(--fundo); color:var(--texto);
+  overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;
+}
+input,select,textarea{-webkit-user-select:text;user-select:text}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ---------- ENTRADA ---------- */
+#entrada{
+  position:fixed;inset:0;z-index:100;background:var(--breu);color:#fff;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:32px 24px calc(32px + var(--safe-b));text-align:center;
+}
+#entrada .logo{font-size:2.8rem;font-weight:900;letter-spacing:-.02em;margin-bottom:2px}
+#entrada .sub{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:40px}
+#entrada label{display:block;font-size:.85rem;font-weight:400;margin-bottom:10px;color:rgba(255,255,255,.55)}
+#entrada input{
+  width:100%;max-width:320px;padding:15px 18px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);
+  color:#fff;font-size:1.05rem;font-weight:500;text-align:center;outline:none;font-family:inherit;
+}
+#entrada input::placeholder{color:rgba(255,255,255,.3)}
+#entrada input:focus{border-color:#fff}
+#entrada input.erro{border-color:#D9534F;animation:tremer .3s}
+@keyframes tremer{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#entrada .ok{
+  margin-top:16px;width:100%;max-width:320px;padding:15px;border-radius:12px;
+  background:#fff;color:var(--breu);font-size:.95rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:.08em;
+}
+#entrada .ok:active{opacity:.8}
+#entrada .aviso{margin-top:24px;font-size:.75rem;color:rgba(255,255,255,.35);max-width:300px;line-height:1.6}
+
+/* ---------- ESTRUTURA ---------- */
+#app{display:none;flex-direction:column;height:100%}
+#app.on{display:flex}
+header{
+  background:var(--fundo);color:var(--texto);flex-shrink:0;border-bottom:1px solid var(--linha);
+  padding:calc(env(safe-area-inset-top,0px) + 13px) var(--pad) 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+header .h-marca{font-size:1.15rem;font-weight:900;letter-spacing:-.01em}
+header .h-quem{font-size:.62rem;text-align:right;line-height:1.5;color:var(--texto3);text-transform:uppercase;letter-spacing:.1em}
+header .h-quem b{display:block;font-size:.78rem;font-weight:500;color:var(--texto);letter-spacing:.04em;text-transform:none}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--fundo)}
+.view{display:none;padding:18px var(--pad) 24px}
+.view.on{display:block}
+h2.tit{font-size:1.5rem;font-weight:900;margin:0 0 2px;letter-spacing:-.02em}
+p.sub{font-size:.78rem;color:var(--texto2);margin:0 0 18px;line-height:1.5}
+
+/* ---------- NAV ---------- */
+nav{
+  flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--fundo);border-top:1px solid var(--linha);
+  padding-bottom:var(--safe-b);height:calc(64px + var(--safe-b));
+}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--texto3);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase}
+nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--texto);font-weight:500}
+
+/* ---------- só a aba Cronograma vira escura ---------- */
+body.crono header,
+body.crono nav,
+body.crono main{background:var(--breu);border-color:rgba(255,255,255,.12)}
+body.crono header{color:#fff}
+body.crono header .h-quem{color:rgba(255,255,255,.3)}
+body.crono header .h-quem b{color:var(--ouro)}
+body.crono nav button{color:rgba(255,255,255,.3)}
+body.crono nav button.on{color:var(--ouro)}
+body.crono{background:var(--breu)}
+
+/* ---------- CALENDÁRIO (preto e branco) ---------- */
+.cal{background:var(--cartao);border:1px solid var(--linha);border-radius:16px;padding:14px 12px 10px;margin-bottom:14px}
+.cal-topo{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px}
+.cal-mes{font-size:.95rem;font-weight:500}
+.cal-topo button{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--linha);
+  display:flex;align-items:center;justify-content:center;color:var(--texto);
+}
+.cal-topo button:active{background:var(--cartao2)}
+.cal-topo button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.cal-grade{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dow{font-size:.55rem;color:var(--texto3);text-transform:uppercase;letter-spacing:.1em;text-align:center;padding:2px 0 6px}
+.cal-dia{
+  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border-radius:11px;font-size:.85rem;font-weight:400;color:var(--texto3);
+}
+.cal-dia span{width:4px;height:4px;border-radius:50%;background:transparent}
+/* dia com escala: número em PRETO NEGRITO sobre cinza claro, com ponto preto */
+.cal-dia.tem{background:var(--cartao2);color:var(--texto);font-weight:900}
+.cal-dia.tem span{background:var(--texto)}
+.cal-dia.hoje{box-shadow:inset 0 0 0 1px var(--texto2)}
+.cal-dia.sel{background:var(--texto);color:#fff;font-weight:900}
+.cal-dia.sel span{background:rgba(255,255,255,.6)}
+.cal-legenda{display:flex;gap:14px;justify-content:center;padding:12px 0 2px;font-size:.6rem;color:var(--texto3);text-transform:uppercase;letter-spacing:.08em}
+.cal-legenda i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--texto);margin-right:5px;vertical-align:middle;font-style:normal}
+
+/* o mesmo calendário, dentro da tela escura do cronograma */
+.crono .cal{background:var(--carvao);border-color:rgba(255,255,255,.12)}
+.crono .cal-topo button{border-color:rgba(255,255,255,.12);color:#fff}
+.crono .cal-dow,.crono .cal-legenda{color:rgba(255,255,255,.3)}
+.crono .cal-dia{color:rgba(255,255,255,.3)}
+.crono .cal-dia.tem{background:var(--carvao2);color:#fff}
+.crono .cal-dia.tem span,.crono .cal-legenda i{background:var(--ouro)}
+.crono .cal-dia.hoje{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.crono .cal-dia.sel{background:var(--ouro);color:var(--breu)}
+.crono .cal-dia.sel span{background:rgba(11,11,11,.55)}
+
+/* ---------- CHIPS DE EVENTO ---------- */
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 16px}
+.chip{padding:7px 13px;border-radius:99px;border:1px solid var(--linha);font-size:.75rem;color:var(--texto2)}
+.chip.on{border-color:var(--texto);color:var(--texto);font-weight:500}
+
+/* ---------- CARTÕES ---------- */
+.card{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px;margin-bottom:10px}
+.card .c-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.c-setor{font-size:.98rem;font-weight:900;line-height:1.25;letter-spacing:-.01em}
+.c-quando{font-size:.72rem;color:var(--texto2);margin-top:3px}
+.pill{font-size:.62rem;font-weight:500;padding:4px 10px;border-radius:99px;border:1px solid var(--linha);color:var(--texto2);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
+.pill.hoje{background:var(--texto);border-color:var(--texto);color:#fff}
+.linha-func{display:flex;gap:10px;padding:7px 0;font-size:.85rem;line-height:1.45;border-top:1px solid var(--linha)}
+.linha-func .f{color:var(--texto2);flex-shrink:0;width:44%;font-weight:400}
+.linha-func .n{font-weight:500}
+/* "onde eu estou" em preto e negrito — sem cor, o app é P&B */
+.linha-func.eu{background:var(--cartao2);margin:0 -14px;padding:8px 14px;border-top:none}
+.linha-func.eu .n{font-weight:900}
+.linha-func.conteudo .f{color:var(--texto3);font-style:italic}
+.linha-func.conteudo .n{color:var(--texto2);font-weight:400;font-size:.82rem}
+
+/* ---------- SELETORES E BOTÕES ---------- */
+.campo{
+  width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--linha);
+  font-size:.92rem;font-family:inherit;background:var(--cartao);color:var(--texto);outline:none;
+  -webkit-appearance:none;appearance:none;font-weight:400;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%230B0B0B' stroke-width='2'><path d='M5 8l5 5 5-5'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+.campo:focus{border-color:var(--texto)}
+.rot{display:block;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--texto3);margin:0 0 8px}
+.btn{
+  width:100%;padding:14px;border-radius:12px;background:var(--texto);color:#fff;
+  border:1px solid var(--texto);font-size:.78rem;font-weight:500;margin-top:14px;
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.btn:active{opacity:.7}
+.btn[disabled]{opacity:.25}
+/* dentro do cronograma o botão vira contorno dourado */
+.crono .btn{background:transparent;color:var(--ouro);border-color:var(--ouro)}
+.crono .rot{color:rgba(255,255,255,.35)}
+
+/* ---------- BUSCA DE NOME ---------- */
+.campo.busca{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%236B6B6B' stroke-width='2'><circle cx='8' cy='8' r='6'/><path d='M12.5 12.5L17 17'/></svg>");
+  background-position:right 14px center;
+}
+.campo.busca::-webkit-search-cancel-button{-webkit-appearance:none}
+#sugestoes{max-height:290px;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
+#sugestoes:not(:empty){border:1px solid var(--linha);border-radius:12px;padding:4px}
+.sug{
+  display:block;width:100%;text-align:left;padding:11px 12px;border-radius:8px;
+  font-size:.92rem;font-weight:400;color:var(--texto);
+}
+.sug:active{background:var(--cartao2)}
+.sug b{font-weight:900}
+.sug i{display:block;font-style:normal;font-size:.7rem;color:var(--texto2);margin-top:2px}
+.sug-nada{padding:14px 12px;font-size:.85rem;color:var(--texto2)}
+.eu-nome{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:10px;padding:13px 14px;border-radius:12px;background:var(--texto);color:#fff;
+}
+.eu-nome b{font-size:1rem;font-weight:900}
+.eu-nome button{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:#fff;opacity:.7;border-bottom:1px solid rgba(255,255,255,.5);padding-bottom:2px}
+
+/* ---------- ESTADOS ---------- */
+.vazio{text-align:center;padding:46px 22px;color:var(--texto3)}
+.vazio .em{font-size:2rem;display:block;margin-bottom:12px;opacity:.6}
+.vazio p{margin:0;font-size:.85rem;line-height:1.6}
+#toast{
+  position:fixed;left:14px;right:14px;bottom:calc(78px + var(--safe-b));z-index:200;
+  background:var(--texto);color:#fff;padding:13px 16px;border-radius:12px;
+  font-size:.85rem;text-align:center;opacity:0;transform:translateY(12px);
+  transition:.2s;pointer-events:none;
+}
+#toast.on{opacity:1;transform:translateY(0)}
+.carregando{text-align:center;padding:38px;color:var(--texto3);font-size:.85rem}
+.rodape{font-size:.68rem;color:var(--texto3);text-align:center;padding:16px 12px 4px;line-height:1.6}
+.dia-cab{font-size:.6rem;font-weight:900;color:var(--texto);text-transform:uppercase;letter-spacing:.16em;margin:20px 0 10px}
+.dia-cab:first-child{margin-top:0}
+
+/* ---------- CRONOGRAMA — reprodução do Figma "Cronograma Culto" ----------
+   Medidas conferidas no protótipo real: topo com foto escura por trás,
+   BIGHOME® de borda a borda, evento em caixa alta e dourado alinhado à
+   ESQUERDA, rótulo branco com valor dourado a 52%, lista SEM divisória.
+   -------------------------------------------------------------------- */
+#v-crono{padding:0}
+/* o texto branco precisa ser declarado aqui: o resto do app é preto sobre
+   branco, então sem isto os nomes dos momentos herdariam preto e sumiriam */
+.crono{min-height:100%;overflow-x:hidden;background:var(--breu);color:#fff}
+.crono .filtro{padding:20px var(--pad) 4px}
+.cal-abrir{
+  display:flex;align-items:center;gap:9px;margin:0 auto;padding:9px 16px;border-radius:99px;
+  border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;
+}
+.cal-abrir svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cal-abrir.on{border-color:var(--ouro);color:var(--ouro)}
+.crono .filtro .cal{margin-top:14px}
+/* a foto é a mesma do Figma (multidão em P&B), tirada do CDN do próprio arquivo */
+.crono .topo{
+  position:relative;padding:20px 0 26px;
+  background:var(--foto,#0B0B0B) center 30%/cover no-repeat;
+}
+.crono .topo::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(11,11,11,.55) 0%,rgba(11,11,11,.25) 45%,rgba(11,11,11,.92) 100%);
+}
+.crono .topo > *{position:relative;z-index:1}
+.crono .faixa{
+  display:flex;justify-content:space-between;gap:20px;
+  padding:0 var(--pad) 18px;font-size:.42rem;line-height:1.5;
+  letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);
+}
+.crono .faixa i{font-style:normal;display:block}
+.crono .faixa b{font-weight:400;float:right;margin-left:14px}
+.crono .marcao{display:block;width:100%;padding:0 var(--pad)}
+.crono .marcao svg{display:block;width:100%;height:auto;overflow:visible}
+.crono .evento{
+  color:var(--ouro);font-weight:400;text-transform:uppercase;
+  font-size:1.45rem;line-height:1.06;letter-spacing:.01em;
+  padding:14px var(--pad) 0;max-width:62%;
+}
+.crono .quando{font-size:.85rem;color:#fff;padding:6px var(--pad) 0;font-weight:400}
+.crono .selo{
+  position:absolute;right:var(--pad);bottom:30px;text-align:right;
+  font-size:.4rem;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.75);line-height:1.7;
+}
+.crono .antes{padding:26px var(--pad) 22px}
+.crono .antes div{display:flex;gap:10px;padding:6px 0;font-size:.88rem;align-items:baseline}
+.crono .antes span:first-child{color:#fff;font-weight:500;width:52%;flex-shrink:0;text-transform:capitalize}
+.crono .antes span:last-child{color:var(--ouro);font-weight:400}
+.crono .lista{border-top:1px solid rgba(255,255,255,.16);padding:14px 0 4px}
+.crono .momento{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:11px var(--pad)}
+.crono .momento .m-nome{font-size:.92rem;font-weight:500;line-height:1.3}
+.crono .momento .m-min{color:rgba(255,255,255,.45);font-weight:400;font-size:.78rem}
+.crono .momento .m-resp{color:var(--ouro);font-size:.85rem;margin-top:2px;font-weight:400;line-height:1.35}
+.crono .momento .m-hora{color:var(--ouro);font-weight:400;font-size:.92rem;white-space:nowrap;padding-top:1px}
+.crono .fim{
+  margin:14px var(--pad) 0;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);
+  display:flex;justify-content:space-between;font-size:.8rem;color:var(--texto2);
+}
+.crono .fim b{color:var(--ouro);font-weight:400}
+/* os setores escalados no dia, em cartões brancos — como no Figma, depois
+   da sequência do culto */
+.crono .setores{padding:26px var(--pad) 6px;display:flex;flex-direction:column;gap:12px}
+.crono .setores h3{
+  font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);
+  margin:0 0 2px;font-weight:400;
+}
+.cartao-branco{background:#fff;color:#0B0B0B;border-radius:14px;padding:16px 18px}
+.cartao-branco .cb-setor{color:var(--ouro);font-size:1rem;font-weight:500;margin-bottom:10px}
+.cartao-branco .cb-linha{margin-bottom:9px}
+.cartao-branco .cb-linha:last-child{margin-bottom:0}
+.cartao-branco .cb-f{font-size:.88rem;font-weight:900}
+.cartao-branco .cb-n{font-size:.85rem;color:#3A3A3A;margin-top:1px;line-height:1.4}
+.cartao-branco .cb-linha.conteudo .cb-f{font-weight:400;color:#6B6B6B;font-size:.8rem}
+.cartao-branco .cb-linha.conteudo .cb-n{color:#6B6B6B;font-style:italic}
+
+/* rodapé: a segunda foto do Figma (em P&B, como no original), com a marca na
+   cor do evento e o logotipo OFICIAL — o "h" com o telhado */
+.crono .rodape-figma{
+  margin-top:26px;position:relative;overflow:hidden;
+  padding:38px var(--pad) calc(34px + var(--safe-b));
+  background:#0B0B0B url('rodape.jpg') center 45%/cover no-repeat;text-align:center;
+}
+.crono .rodape-figma::after{
+  content:'';position:absolute;inset:0;background:rgba(11,11,11,.55);pointer-events:none;
+}
+.crono .rodape-figma > *{position:relative;z-index:1}
+.crono .rodape-figma .marcao svg text{fill:var(--ouro)}
+.crono .rodape-figma .logo-oficial{
+  display:block;width:46%;max-width:190px;margin:22px auto 0;height:auto;
+}
+
+.crono .setlist{padding:26px var(--pad) 4px}
+.crono .setlist h3{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);margin:0 0 14px;font-weight:400}
+.crono .setlist .mus{display:flex;gap:12px;padding:7px 0;font-size:.88rem}
+.crono .setlist .mus i{color:var(--texto3);font-style:normal;min-width:20px}
+.crono .setlist .mus span{color:var(--ouro)}
+.crono .acoes{padding:24px var(--pad) 8px}
+</style>
+</head>
+<body>
+
+<!-- ══════════ ENTRADA ══════════ -->
+<div id="entrada">
+  <div class="logo">BIGHOME®</div>
+  <div class="sub">Escalas</div>
+  <label for="inpSenha">Senha do ministério</label>
+  <input id="inpSenha" type="password" placeholder="••••••" autocomplete="off" enterkeyhint="go">
+  <button class="ok" onclick="entrar()">Entrar</button>
+  <div class="aviso">A escala tem o nome dos voluntários. A senha é o que mantém isso fora do alcance de quem não é da casa.</div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+  <header>
+    <div class="h-marca">BIGHOME®</div>
+    <div class="h-quem"><b id="hQuem">—</b><span id="hData">—</span></div>
+  </header>
+
+  <main>
+    <!-- 1. CRONOGRAMA -->
+    <section class="view on" id="v-crono">
+      <div class="crono" id="cronoCorpo"><div class="carregando">Carregando…</div></div>
+    </section>
+
+    <!-- 2. CULTO -->
+    <section class="view" id="v-culto">
+      <h2 class="tit">Escala do culto</h2>
+      <p class="sub" id="subCulto">—</p>
+      <div id="calCulto"></div>
+      <div id="chipsCulto"></div>
+      <div id="listaCulto"><div class="carregando">Carregando a escala…</div></div>
+    </section>
+
+    <!-- 3. SOU EU -->
+    <section class="view" id="v-eu">
+      <h2 class="tit">Minhas escalas</h2>
+      <p class="sub">Escolha seu nome para ver onde você serve.</p>
+      <label class="rot" for="buscaEu">Quem é você?</label>
+      <input class="campo busca" id="buscaEu" type="search" enterkeyhint="search"
+             placeholder="Digite seu nome…" autocomplete="off" autocorrect="off"
+             oninput="filtrarPessoas(this.value)" onfocus="filtrarPessoas(this.value)">
+      <div id="sugestoes"></div>
+      <div id="escolhido"></div>
+      <div id="listaEu"></div>
+    </section>
+
+    <!-- 4. SETOR -->
+    <section class="view" id="v-setor">
+      <h2 class="tit">Escala do setor</h2>
+      <p class="sub">Escolha o setor para ver o mês inteiro e gerar o PDF.</p>
+      <label class="rot" for="selSetor">Setor</label>
+      <select class="campo" id="selSetor" onchange="escolherSetor(this.value)"></select>
+      <button class="btn" id="btnPdf" onclick="gerarPdf()" disabled>Gerar PDF da escala</button>
+      <div id="listaSetor"></div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="on" data-v="crono" onclick="irPara('crono')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Cronograma</button>
+    <button data-v="culto" onclick="irPara('culto')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>Culto</button>
+    <button data-v="eu" onclick="irPara('eu')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sou eu</button>
+    <button data-v="setor" onclick="irPara('setor')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M9 13h6M9 17h4"/></svg>Setor</button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script src="jspdf.umd.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   BIGHOME — ESCALAS
+   Le do Apps Script, que so responde com a senha certa. Os nomes
+   dos voluntarios nunca ficam publicos.
+   ══════════════════════════════════════════════════════════════ */
+
+const SERVICO = 'https://script.google.com/macros/s/AKfycbyS3yutwCZAI8wzuJm6dGPb4Hp-zAKSwPvOFqUme5WWWkhi1LvzbMJfvenfzBg3ucKvxw/exec';
+
+const K = { senha:'bh_senha', pessoa:'bh_pessoa', cache:'bh_cache' };
+
+let DADOS  = null;
+let SENHA  = localStorage.getItem(K.senha) || '';
+let PESSOA = localStorage.getItem(K.pessoa) || '';
+let SETOR  = '';
+
+const $ = id => document.getElementById(id);
+
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho',
+               'agosto','setembro','outubro','novembro','dezembro'];
+const DOW = ['D','S','T','Q','Q','S','S'];
+
+/* ---------- utilidades ---------- */
+function norm(s){
+  return String(s || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function dataBR(iso){
+  if(!iso) return '';
+  const [a,m,d] = iso.split('-');
+  return d + '/' + m;
+}
+function dataExtenso(iso){
+  const [a,m,d] = iso.split('-');
+  const dt = new Date(Number(a), Number(m)-1, Number(d), 12);
+  return dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+}
+function hojeISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function maiuscula(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
+let tmr;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(tmr); tmr = setTimeout(()=>t.classList.remove('on'), 3000);
+}
+function vazio(em, txt){
+  return `<div class="vazio"><span class="em">${em}</span><p>${txt}</p></div>`;
+}
+
+/**
+ * A celula traz "Alicia e Livia" ou "Gabi/Agatha". Compara nome a nome,
+ * INTEIRO: procurar por pedaco faria "Gabi" casar dentro de "Gabriela".
+ *
+ * No Relogio de Oracao a celula vem com o turno na frente — "8h a 12h: Alicia
+ * e Livia". Sem tirar esse prefixo a Alicia nao se acha no "Sou eu".
+ */
+function citaPessoa(texto, nomes){
+  const partes = String(texto || '')
+    .split(/\s*(?:,|\/| e |;)\s*/)
+    .map(p => p.replace(/^\s*\d{1,2}\s*h?\s*(?:a|às|as)\s*\d{1,2}\s*h?\s*:\s*/i, ''))
+    .map(norm).filter(Boolean);
+  return nomes.some(n => partes.indexOf(norm(n)) >= 0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CALENDÁRIO — o filtro de data de todas as telas
+   Dia com escala fica destacado (fundo elevado, número em negrito
+   e ponto dourado). Dia sem nada continua clicável, mas apagado.
+   ══════════════════════════════════════════════════════════════ */
+function htmlCalendario(ns, mesISO, comConteudo, sel){
+  const [a, m] = mesISO.split('-').map(Number);
+  const diasNoMes = new Date(a, m, 0).getDate();
+  const off = new Date(a, m-1, 1, 12).getDay();
+  const h = hojeISO();
+
+  let cels = '';
+  for(let i = 0; i < off; i++) cels += '<div></div>';
+  for(let d = 1; d <= diasNoMes; d++){
+    const iso = a + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const cls = ['cal-dia'];
+    if(comConteudo.indexOf(iso) >= 0) cls.push('tem');
+    if(iso === h)   cls.push('hoje');
+    if(iso === sel) cls.push('sel');
+    cels += `<button class="${cls.join(' ')}" onclick="${ns}Dia('${iso}')">${d}<span></span></button>`;
+  }
+
+  return `<div class="cal">
+    <div class="cal-topo">
+      <button onclick="${ns}Mes(-1)" aria-label="Mês anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="cal-mes">${maiuscula(MESES[m-1])} de ${a}</div>
+      <button onclick="${ns}Mes(1)" aria-label="Próximo mês"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="cal-grade">
+      ${DOW.map(x => '<div class="cal-dow">' + x + '</div>').join('')}
+      ${cels}
+    </div>
+    <div class="cal-legenda"><span><i></i>tem escala</span></div>
+  </div>`;
+}
+
+function somaMes(mesISO, delta){
+  let [a, m] = mesISO.split('-').map(Number);
+  m += delta;
+  if(m < 1){ m = 12; a--; }
+  if(m > 12){ m = 1; a++; }
+  return a + '-' + String(m).padStart(2,'0');
+}
+
+/* ---------- entrada ---------- */
+function entrar(){
+  const s = $('inpSenha').value.trim();
+  if(!s){ erroSenha(); return; }
+  SENHA = s;
+  buscar(true);
+}
+function erroSenha(){
+  const i = $('inpSenha');
+  i.classList.add('erro'); i.focus();
+  setTimeout(()=>i.classList.remove('erro'), 1200);
+}
+$('inpSenha').addEventListener('keydown', e => { if(e.key === 'Enter') entrar(); });
+
+async function buscar(primeira){
+  if(primeira) $('inpSenha').disabled = true;
+  try{
+    const r = await fetch(SERVICO + '?senha=' + encodeURIComponent(SENHA));
+    const j = await r.json();
+    if(!j.ok){
+      $('inpSenha').disabled = false;
+      erroSenha();
+      toast('Senha incorreta');
+      return;
+    }
+    DADOS = j;
+    localStorage.setItem(K.senha, SENHA);
+    localStorage.setItem(K.cache, JSON.stringify(j));
+    iniciar();
+  }catch(e){
+    // sem internet: usa o que ficou guardado da ultima vez
+    const c = localStorage.getItem(K.cache);
+    if(c && SENHA){
+      DADOS = JSON.parse(c);
+      iniciar();
+      toast('Sem internet — mostrando a última escala baixada');
+    }else{
+      $('inpSenha').disabled = false;
+      toast('Não consegui buscar a escala. Confira a internet.');
+    }
+  }
+}
+
+function iniciar(){
+  $('entrada').style.display = 'none';
+  $('app').classList.add('on');
+  document.body.classList.add('crono');   // o app abre no Cronograma, que é escuro
+  $('hData').textContent = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'short'});
+  montarPessoas();
+  montarSetores();
+  renderCulto();
+  renderCrono();
+  if(PESSOA) escolherPessoa(PESSOA);
+  atualizarCabecalho();
+}
+
+function atualizarCabecalho(){
+  $('hQuem').textContent = PESSOA || 'Escalas';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   1. CULTO — calendário + chips de evento
+   ══════════════════════════════════════════════════════════════ */
+let CULTO_DIA = '', CULTO_MES = '', CULTO_EVENTO = '';
+
+function datasDaEscala(){
+  const m = {};
+  (DADOS.escalas || []).forEach(e => { m[e.data] = 1; });
+  return Object.keys(m).sort();
+}
+
+function proximaData(){
+  const h = hojeISO();
+  const todas = datasDaEscala();
+  const futuras = todas.filter(d => d >= h);
+  if(futuras.length) return futuras[0];
+  return todas.length ? todas[todas.length-1] : '';
+}
+
+function cultoDia(d){ CULTO_DIA = d; CULTO_MES = d.slice(0,7); CULTO_EVENTO = ''; renderCulto(); }
+function cultoMes(delta){ CULTO_MES = somaMes(CULTO_MES, delta); renderCulto(); }
+
+function renderCulto(){
+  if(!CULTO_DIA) CULTO_DIA = proximaData() || hojeISO();
+  if(!CULTO_MES) CULTO_MES = CULTO_DIA.slice(0,7);
+
+  $('calCulto').innerHTML = htmlCalendario('culto', CULTO_MES, datasDaEscala(), CULTO_DIA);
+
+  const doDia = (DADOS.escalas || []).filter(e => e.data === CULTO_DIA);
+  const eventos = [];
+  doDia.forEach(e => { if(e.evento && eventos.indexOf(e.evento) < 0) eventos.push(e.evento); });
+
+  // um dia pode ter mais de um evento (culto de manhã e intensivo, por exemplo):
+  // cada um vira um chip em vez de tudo empilhado num filtro só
+  $('chipsCulto').innerHTML = eventos.length > 1
+    ? '<div class="chips">' +
+      `<button class="chip${CULTO_EVENTO ? '' : ' on'}" onclick="cultoEvento('')">Todos</button>` +
+      eventos.map(ev => `<button class="chip${CULTO_EVENTO === ev ? ' on' : ''}" onclick="cultoEvento('${ev.replace(/'/g,"\\'")}')">${ev}</button>`).join('') +
+      '</div>'
+    : '';
+
+  const eHoje = CULTO_DIA === hojeISO();
+  $('subCulto').textContent = (eHoje ? 'Hoje · ' : '') + maiuscula(dataExtenso(CULTO_DIA)) +
+    (eventos.length === 1 ? ' · ' + eventos[0] : '');
+
+  const lista = (CULTO_EVENTO ? doDia.filter(e => e.evento === CULTO_EVENTO) : doDia)
+    .sort((a,b) => a.setor.localeCompare(b.setor));
+
+  $('listaCulto').innerHTML = lista.length
+    ? lista.map(e => cartao(e, eHoje)).join('') +
+      `<div class="rodape">${lista.length} setor(es) escalado(s) neste dia.</div>`
+    : vazio('🗓️', 'Nada escalado nesta data.<br>Escolha outro dia no calendário — os dias com escala estão destacados.');
+}
+
+function cultoEvento(ev){ CULTO_EVENTO = ev; renderCulto(); }
+
+function cartao(e, marcarHoje){
+  const meus = nomesDaPessoa();
+  const linhas = e.equipe.map(f => {
+    const cls = f.conteudo ? 'conteudo' : (meus.length && citaPessoa(f.nomes, meus) ? 'eu' : '');
+    return `<div class="linha-func ${cls}"><span class="f">${f.funcao}</span><span class="n">${f.nomes}</span></div>`;
+  }).join('');
+  return `<div class="card">
+    <div class="c-topo">
+      <div><div class="c-setor">${e.setor}</div>
+           <div class="c-quando">${e.horario || ''}${e.horario && e.evento ? ' · ' : ''}${e.evento || ''}</div></div>
+      ${marcarHoje ? '<span class="pill hoje">hoje</span>' : '<span class="pill">' + dataBR(e.data) + '</span>'}
+    </div>
+    ${linhas || '<div class="linha-func"><span class="n" style="color:var(--texto3)">Ninguém escalado ainda</span></div>'}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. CRONOGRAMA — a tela que substitui o Figma "Cronograma Culto"
+   O horario de cada momento ja vem calculado em cascata pelo
+   servico: quem preenche a planilha digita so a duracao.
+   ══════════════════════════════════════════════════════════════ */
+let CRONO_DIA = '', CRONO_MES = '', CAL_ABERTO = false;
+
+function toggleCalCrono(){ CAL_ABERTO = !CAL_ABERTO; renderCrono(); }
+
+/**
+ * Cada evento tem a SUA cara no Figma: a Sala de Oração é dourada com a foto
+ * em preto e branco; o culto de domingo é azul com a foto das mãos sob a luz
+ * azul. As duas fotos vieram do próprio arquivo do Figma.
+ * Para acrescentar um evento: uma linha aqui e o .jpg na pasta do app.
+ */
+const CARA = {
+  'sala de oracao':    { cor:'#E0A32E', foto:'topo-culto.jpg' },
+  'casas como igreja': { cor:'#A19299', foto:'topo-culto.jpg' },
+  // a Santa Ceia é culto de domingo de manhã: cai no padrão, azul
+  'padrao':            { cor:'#7FB2E8', foto:'topo-manha.jpg' }
+};
+
+function caraDoEvento(ev){
+  const e = norm(ev);
+  const chave = Object.keys(CARA).filter(k => k !== 'padrao' && e.indexOf(k) >= 0)[0];
+  return CARA[chave || 'padrao'];
+}
+function corDoEvento(ev){ return caraDoEvento(ev).cor; }
+
+/**
+ * BIGHOME® de borda a borda. O SVG com textLength + lengthAdjust estica o
+ * tracado ate a largura exata — e o unico jeito de garantir que encosta nas
+ * duas margens em qualquer tela, como no Figma.
+ */
+function marcaSvg(){
+  return `<div class="marcao"><svg viewBox="0 0 1000 150" role="img" aria-label="Bighome">
+    <text x="0" y="118" textLength="1000" lengthAdjust="spacingAndGlyphs"
+          font-family="Creato Display, sans-serif" font-weight="900"
+          font-size="150" fill="#fff">BIGHOME®</text></svg></div>`;
+}
+
+/**
+ * Depois da sequência do culto o Figma traz os SETORES escalados naquele dia,
+ * em cartões brancos: função em negrito e os nomes embaixo. O tema das aulas
+ * do Kids entra como conteúdo, em itálico — não é escalação.
+ */
+function setoresDoDia(iso){
+  const doDia = (DADOS.escalas || []).filter(e => e.data === iso)
+                                     .sort((a,b) => a.setor.localeCompare(b.setor));
+  if(!doDia.length) return '';
+
+  return `<div class="setores"><h3>Setores escalados</h3>` + doDia.map(e => `
+    <div class="cartao-branco">
+      <div class="cb-setor">${e.setor}</div>
+      ${e.equipe.map(f => `
+        <div class="cb-linha${f.conteudo ? ' conteudo' : ''}">
+          <div class="cb-f">${f.funcao}</div>
+          <div class="cb-n">${f.nomes}</div>
+        </div>`).join('')}
+    </div>`).join('') + '</div>';
+}
+
+/** As duas colunas de micro-texto do topo, invertidas uma em relação à outra. */
+function faixaTopo(ano){
+  return `<div class="faixa">
+    <i>Cronograma<br>cúltico<b>© ${ano}</b><br>Casas como igrejas</i>
+    <i>Cronograma<br>cúltico<b>© ${ano}</b><br>Igrejas como casas</i>
+  </div>`;
+}
+
+function listaCrono(){ return (DADOS && DADOS.cronograma) || []; }
+function cronoDoDia(d){ return listaCrono().filter(c => c.data === d)[0] || null; }
+function setlistDoDia(d){ return ((DADOS && DADOS.setlist) || []).filter(s => s.data === d)[0] || null; }
+function datasCrono(){ return listaCrono().map(c => c.data).sort(); }
+
+function proximoCrono(){
+  const h = hojeISO();
+  const datas = datasCrono();
+  const fut = datas.filter(d => d >= h);
+  if(fut.length) return fut[0];
+  return datas.length ? datas[datas.length-1] : '';
+}
+
+function cronoDia(d){ CRONO_DIA = d; CRONO_MES = d.slice(0,7); CAL_ABERTO = false; renderCrono(); }
+function cronoMes(delta){ CRONO_MES = somaMes(CRONO_MES, delta); renderCrono(); }
+
+function renderCrono(){
+  const alvo = $('cronoCorpo');
+  const lista = listaCrono();
+
+  if(!CRONO_DIA) CRONO_DIA = proximoCrono() || hojeISO();
+  if(!CRONO_MES) CRONO_MES = CRONO_DIA.slice(0,7);
+
+  // a tela abre no cronograma do dia, como o pôster do Figma. O calendário só
+  // aparece se a pessoa pedir — é para consultar um domingo estando na quinta
+  const cal = `<div class="filtro">
+    <button class="cal-abrir${CAL_ABERTO ? ' on' : ''}" onclick="toggleCalCrono()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+      ${CAL_ABERTO ? 'Fechar calendário' : 'Ver outra data'}
+    </button>
+    ${CAL_ABERTO ? htmlCalendario('crono', CRONO_MES, datasCrono(), CRONO_DIA) : ''}
+  </div>`;
+
+  if(!lista.length){
+    alvo.innerHTML = `<div class="topo">${faixaTopo(new Date().getFullYear())}${marcaSvg()}</div>` + cal +
+      vazio('🕗','Nenhum cronograma preenchido ainda.<br>Preencha a guia <b>CRONOGRAMA</b> da planilha.');
+    return;
+  }
+
+  const c = cronoDoDia(CRONO_DIA);
+  if(!c){
+    alvo.innerHTML = `<div class="topo">${faixaTopo(CRONO_DIA.slice(0,4))}${marcaSvg()}</div>` + cal +
+      vazio('🕗','Sem cronograma nesta data.<br>Os dias com cronograma estão destacados no calendário.');
+    return;
+  }
+
+  const s    = setlistDoDia(CRONO_DIA);
+  const cara = caraDoEvento(c.evento);
+  const cor  = cara.cor;
+
+  const antes = [];
+  if(c.preparacao) antes.push(['Preparação setorial', c.preparacao]);
+  if(c.gerente)    antes.push(['Checagem gerente',    c.gerente]);
+
+  // a tela do culto de domingo mostra a duração ao lado do momento
+  const momentos = c.momentos.map(m => `
+    <div class="momento">
+      <div>
+        <div class="m-nome">${m.momento}${m.minutos ? ' <span class="m-min">• ' + m.minutos + ' min</span>' : ''}</div>
+        ${m.responsavel ? '<div class="m-resp">' + m.responsavel + '</div>' : ''}
+      </div>
+      <div class="m-hora">${m.horario || ''}</div>
+    </div>`).join('');
+
+  const musicas  = s ? s.itens.filter(i => !i.conteudo && norm(i.rotulo).indexOf('musica') === 0) : [];
+  const ministro = s ? s.itens.filter(i => norm(i.rotulo) === 'ministro')[0] : null;
+  const recado   = s ? s.itens.filter(i => i.conteudo)[0] : null;
+  const diaSemana = dataExtenso(CRONO_DIA).split(',')[0] || '';
+
+  const [ano, mes, dia] = CRONO_DIA.split('-');
+
+  alvo.style.setProperty('--ouro', cor);
+  alvo.innerHTML = `
+    <div class="topo" style="background-image:url('${cara.foto}')">
+      ${faixaTopo(CRONO_DIA.slice(0,4))}
+      ${marcaSvg()}
+      <div class="evento">${c.evento || 'Culto'}</div>
+      <div class="quando">${maiuscula(diaSemana)} · ${dia} de ${MESES[Number(mes)-1]}${c.inicio ? ' · ' + c.inicio : ''}</div>
+      <div class="selo">Bighome<br>Igreja SP<br>© ${CRONO_DIA.slice(0,4)}</div>
+    </div>
+    ${antes.length ? '<div class="antes">' + antes.map(a => `<div><span>${a[0]}</span><span>${a[1]}</span></div>`).join('') + '</div>' : ''}
+    <div class="lista">
+      ${momentos || vazio('🕗','Nenhum momento preenchido para esta data.')}
+      ${c.termino ? `<div class="fim"><span>Término previsto</span><b>${c.termino}</b></div>` : ''}
+    </div>
+    ${musicas.length || ministro ? `<div class="setlist">
+        <h3>Set list</h3>
+        ${ministro ? `<div class="mus"><i>♪</i><span>${ministro.valor}</span></div>` : ''}
+        ${musicas.map((m,i) => `<div class="mus"><i>${i+1}</i><span>${m.valor}</span></div>`).join('')}
+        ${recado ? `<div class="mus"><i>!</i><span>${recado.valor}</span></div>` : ''}
+      </div>` : ''}
+    ${setoresDoDia(CRONO_DIA)}
+    ${cal}
+    <div class="rodape-figma">
+      ${marcaSvg()}
+      ${faixaTopo(CRONO_DIA.slice(0,4))}
+      <img class="logo-oficial" src="logo-branco.png" alt="Bighome">
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. SOU EU
+   ══════════════════════════════════════════════════════════════ */
+/**
+ * São quase 100 voluntários: rolar a lista inteira é ruim. O campo filtra
+ * conforme se digita, ignorando acento e maiúscula, e procura TAMBÉM pelos
+ * apelidos usados na escala — quem é "Gui Mousse" acha digitando "mousse".
+ * Com o campo vazio a lista completa continua ali, é só rolar.
+ */
+function montarPessoas(){ filtrarPessoas(''); }
+
+function filtrarPessoas(termo){
+  const t = norm(termo);
+  const todos = DADOS.voluntarios || [];
+  const achados = t
+    ? todos.filter(v => norm(v.nome).indexOf(t) >= 0 ||
+                        (v.apelidos || []).some(a => norm(a).indexOf(t) >= 0))
+    : todos;
+
+  if(!achados.length){
+    $('sugestoes').innerHTML = '<div class="sug-nada">Ninguém com esse nome na lista. ' +
+      'Fale com a liderança do seu setor para ser cadastrado.</div>';
+    return;
+  }
+
+  $('sugestoes').innerHTML = achados.map(v => {
+    // mostra o apelido quando foi ele que casou com a busca
+    const porApelido = t && norm(v.nome).indexOf(t) < 0
+      ? (v.apelidos || []).filter(a => norm(a).indexOf(t) >= 0)[0] : '';
+    return `<button class="sug" onclick="escolherPessoa('${v.nome.replace(/'/g,"\\'")}')">
+      ${realce(v.nome, termo)}${porApelido ? '<i>na escala aparece como “' + porApelido + '”</i>' : ''}
+    </button>`;
+  }).join('');
+}
+
+/** Deixa em negrito o trecho digitado, para o olho achar sozinho. */
+function realce(nome, termo){
+  const t = norm(termo);
+  if(!t) return nome;
+  const i = norm(nome).indexOf(t);
+  if(i < 0) return nome;
+  return nome.slice(0, i) + '<b>' + nome.slice(i, i + t.length) + '</b>' + nome.slice(i + t.length);
+}
+
+function nomesDaPessoa(){
+  if(!PESSOA || !DADOS) return [];
+  const v = (DADOS.voluntarios || []).filter(x => x.nome === PESSOA)[0];
+  return v ? [v.nome].concat(v.apelidos || []) : [PESSOA];
+}
+
+function trocarPessoa(){
+  PESSOA = '';
+  localStorage.setItem(K.pessoa, '');
+  $('buscaEu').value = '';
+  $('escolhido').innerHTML = '';
+  $('listaEu').innerHTML = '';
+  atualizarCabecalho();
+  filtrarPessoas('');
+  $('buscaEu').focus();
+  renderCulto();
+}
+
+function escolherPessoa(nome){
+  PESSOA = nome;
+  localStorage.setItem(K.pessoa, nome);
+  atualizarCabecalho();
+
+  // escolhido: some a lista e fica só o nome, com o caminho de volta
+  $('sugestoes').innerHTML = '';
+  $('buscaEu').value = '';
+  $('escolhido').innerHTML = nome
+    ? `<div class="eu-nome"><b>${nome}</b><button onclick="trocarPessoa()">Trocar</button></div>`
+    : '';
+
+  if(!nome){ $('listaEu').innerHTML = ''; renderCulto(); return; }
+
+  const meus = nomesDaPessoa();
+  const h = hojeISO();
+  const minhas = (DADOS.escalas || [])
+    .filter(e => e.data >= h && e.equipe.some(f => !f.conteudo && citaPessoa(f.nomes, meus)))
+    .sort((a,b) => a.data.localeCompare(b.data) || a.setor.localeCompare(b.setor));
+
+  if(!minhas.length){
+    $('listaEu').innerHTML = vazio('🌤️', 'Você não está escalado nas próximas datas.<br>Se acha que deveria estar, fale com a liderança do seu setor.');
+    return;
+  }
+
+  let html = '';
+  let ultima = '';
+  minhas.forEach(e => {
+    if(e.data !== ultima){
+      html += `<div class="dia-cab">${dataExtenso(e.data)}</div>`;
+      ultima = e.data;
+    }
+    const funcoes = e.equipe.filter(f => !f.conteudo && citaPessoa(f.nomes, meus));
+    html += `<div class="card">
+      <div class="c-topo">
+        <div><div class="c-setor">${e.setor}</div>
+             <div class="c-quando">${e.horario || ''}${e.horario && e.evento ? ' · ' : ''}${e.evento || ''}</div></div>
+        <span class="pill">${dataBR(e.data)}</span>
+      </div>
+      ${funcoes.map(f => `<div class="linha-func eu"><span class="f">${f.funcao}</span><span class="n">${f.nomes}</span></div>`).join('')}
+    </div>`;
+  });
+  $('listaEu').innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. SETOR
+   ══════════════════════════════════════════════════════════════ */
+function montarSetores(){
+  const set = {};
+  (DADOS.escalas || []).forEach(e => { set[e.setor] = 1; });
+  const ops = ['<option value="">Selecione o setor…</option>']
+    .concat(Object.keys(set).sort().map(s => `<option value="${s}">${s}</option>`));
+  $('selSetor').innerHTML = ops.join('');
+}
+
+function escolherSetor(s){
+  SETOR = s;
+  $('btnPdf').disabled = !s;
+  if(!s){ $('listaSetor').innerHTML = ''; return; }
+
+  const doSetor = (DADOS.escalas || []).filter(e => e.setor === s).sort((a,b) => a.data.localeCompare(b.data));
+  if(!doSetor.length){
+    $('listaSetor').innerHTML = vazio('📄', 'Este setor ainda não tem escala preenchida.');
+    return;
+  }
+  $('listaSetor').innerHTML = doSetor.map(e => cartao(e, e.data === hojeISO())).join('') +
+    `<div class="rodape">Escala vinda da planilha.<br>Para mudar, edite a guia <b>${s}</b> e reabra o app.</div>`;
+}
+
+/* ---------- PDF da escala do setor ---------- */
+function gerarPdf(){
+  if(!SETOR) return;
+  const doSetor = (DADOS.escalas || []).filter(e => e.setor === SETOR).sort((a,b) => a.data.localeCompare(b.data));
+  if(!doSetor.length){ toast('Nada para gerar'); return; }
+
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  // mesma identidade do app: faixa preta, BIGHOME® e o micro-texto do Figma.
+  // Preto e branco, porque este PDF também vai para a impressora.
+  const W = 210, MR = 15, ML = 15, UTIL = W - ML - MR;
+  const PRETO = [11,11,11], CINZA = [110,110,110];
+  const ano = new Date().getFullYear();
+
+  doc.setFillColor(...PRETO); doc.rect(0, 0, W, 40, 'F');
+  doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
+  doc.text('CRONOGRAMA CÚLTICO  © ' + ano, ML, 11);
+  doc.text('CASAS COMO IGREJAS', ML, 14.5);
+  doc.text('BIGHOME · IGREJA SP', W - MR, 11, {align:'right'});
+  doc.text('© ' + ano, W - MR, 14.5, {align:'right'});
+
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(26);
+  doc.text('BIGHOME®', ML, 28);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('ESCALA · ' + SETOR.toUpperCase(), ML, 35);
+  doc.setTextColor(150,150,150); doc.setFontSize(7);
+  doc.text('Gerado em ' + new Date().toLocaleDateString('pt-BR'), W - MR, 35, {align:'right'});
+
+  let y = 54;
+  doSetor.forEach(e => {
+    const alt = 13 + e.equipe.length * 5.4;
+    if(y + alt > 272){ doc.addPage(); y = 24; }
+
+    doc.setDrawColor(...PRETO); doc.setLineWidth(0.4);
+    doc.line(ML, y - 5, W - MR, y - 5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...PRETO);
+    doc.text(dataExtenso(e.data).toUpperCase(), ML, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...CINZA);
+    doc.text([e.horario, e.evento].filter(Boolean).join(' · '), W - MR, y, {align:'right'});
+    y += 8;
+
+    e.equipe.forEach(f => {
+      if(y > 278){ doc.addPage(); y = 24; }
+      doc.setFontSize(9);
+      doc.setTextColor(...CINZA); doc.setFont('helvetica','normal');
+      doc.text(String(f.funcao).slice(0,32), ML, y);
+      doc.setTextColor(...PRETO); doc.setFont('helvetica', f.conteudo ? 'italic' : 'bold');
+      const txt = doc.splitTextToSize(String(f.nomes), UTIL - 58);
+      doc.text(txt, ML + 58, y);
+      y += Math.max(5.4, txt.length * 4.6);
+    });
+    y += 6;
+  });
+
+  const tot = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= tot; i++){
+    doc.setPage(i);
+    doc.setDrawColor(...PRETO); doc.setLineWidth(0.4);
+    doc.line(ML, 283, W - MR, 283);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...PRETO);
+    doc.text('BIGHOME®', ML, 289);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...CINZA);
+    doc.text('IGREJA SP · CASAS COMO IGREJAS · © ' + ano, ML + 26, 289);
+    doc.text(i + '/' + tot, W - MR, 289, {align:'right'});
+  }
+
+  compartilhar(doc.output('blob'), 'Escala ' + SETOR + '.pdf', 'Escala — ' + SETOR);
+}
+
+/** Abre o compartilhar do celular; no computador cai em download. */
+async function compartilhar(blob, nome, texto){
+  const arq = new File([blob], nome, {type:blob.type});
+  if(navigator.canShare && navigator.canShare({files:[arq]})){
+    try{ await navigator.share({files:[arq], title:'Bighome', text:texto}); toast('✓ Enviado'); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  toast('✓ PDF baixado');
+}
+
+/* ---------- navegação ---------- */
+function irPara(v){
+  document.querySelectorAll('.view').forEach(s => s.classList.remove('on'));
+  $('v-' + v).classList.add('on');
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  // o preto só vale para o Cronograma; as outras telas são preto e branco
+  document.body.classList.toggle('crono', v === 'crono');
+  document.querySelector('meta[name=theme-color]').setAttribute('content', v === 'crono' ? '#0B0B0B' : '#FFFFFF');
+  document.querySelector('main').scrollTop = 0;
+}
+
+/* ---------- arranque ---------- */
+if(SENHA){
+  const c = localStorage.getItem(K.cache);
+  if(c){ DADOS = JSON.parse(c); iniciar(); }   // abre na hora com o que tem
+  buscar(false);                                // e busca o atual em segundo plano
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
