@@ -347,7 +347,7 @@ body.crono{background:var(--breu)}
   <label for="inpSenha">Senha do ministério</label>
   <input id="inpSenha" type="password" placeholder="••••••" autocomplete="off" enterkeyhint="go">
   <button class="ok" onclick="entrar()">Entrar</button>
-  <div class="aviso">A escala tem o nome dos voluntários. A senha é o que mantém isso fora do alcance de quem não é da casa.</div>
+  <div class="aviso">A escala tem o nome dos voluntários. A senha é o que mantém isso fora do alcance de quem não é da casa.<br><br>Se você recebeu o link da liderança, é só tocar nele de novo — ele entra sozinho.</div>
 </div>
 
 <!-- ══════════ APP ══════════ -->
@@ -1052,6 +1052,27 @@ function irPara(v){
 }
 
 /* ---------- arranque ---------- */
+
+/**
+ * O link divulgado no grupo ja traz a senha: /?e=bighome2026. Quem abre entra
+ * direto e nunca ve tela de senha — mas quem so tem o endereco base continua
+ * de fora, que e o motivo de existir a senha (a escala tem nome e sobrenome
+ * de quase 100 pessoas).
+ *
+ * A senha sai da barra de endereco na hora, para nao ficar exposta na tela
+ * nem no historico compartilhado.
+ */
+(function(){
+  const daUrl = new URLSearchParams(location.search).get('e');
+  if(!daUrl) return;
+  SENHA = daUrl.trim();
+  localStorage.setItem(K.senha, SENHA);
+  history.replaceState({}, '', location.pathname);
+  // enquanto a escala nao chega, ninguem pode achar que precisa digitar algo
+  $('inpSenha').disabled = true;
+  document.querySelector('#entrada .ok').textContent = 'Entrando…';
+})();
+
 if(SENHA){
   const c = localStorage.getItem(K.cache);
   if(c){ DADOS = JSON.parse(c); iniciar(); }   // abre na hora com o que tem
